@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>localexec: let Claude Code hand coding tasks to a local model</title>
+<meta name="description" content="localexec is a local MCP server. Claude Code plans and specifies small tasks, a model running in Ollama on your machine writes the code, and your own checks decide whether it passed.">
+<meta property="og:title" content="localexec: let Claude Code hand coding tasks to a local model">
+<meta property="og:description" content="localexec is a local MCP server. Claude Code plans and specifies small tasks, a model running in Ollama on your machine writes the code, and your own checks decide whether it passed.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22' fill='none' stroke='%232b3fd6' stroke-width='2' stroke-linecap='round'%3E%3Crect x='2' y='2' width='18' height='18' rx='4'/%3E%3Cpath d='M6.5 8h5M6.5 11h9M6.5 14h6'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem('localexec-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header"><div class="bar"><a class="brand" href="index.html"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="2" y="2" width="18" height="18" rx="4"/><path d="M6.5 8h5M6.5 11h9M6.5 14h6"/></svg>localexec</a><nav aria-label="Primary"><a href="getting-started.html" class="hide-sm">Getting started</a><a href="guide.html" class="hide-sm">Guide</a><a href="tools.html" class="hide-sm">Tools</a><a href="configuration.html" class="hide-sm">Configuration</a><button class="theme" type="button">Dark theme</button></nav></div></header>
+<main id="main">
+<section class="hero">
+<div>
+<h1>Claude plans. Your GPU writes the code.</h1>
+<p class="lede">localexec is a local MCP server for Claude Code. It passes small, precisely specified coding tasks to a model running in Ollama on your machine, checks the result with your own tests and linters, and returns a short verdict instead of a diff.</p>
+<div class="actions"><a class="btn primary" href="getting-started.html">Install localexec</a><a class="btn quiet" href="how-it-works.html">See how a task runs</a></div>
+</div>
+
+<div class="ticket" role="img" aria-label="Example of one task: the spec sent to the local model, the change applied to calc.py, and the short result returned to Claude">
+<div class="ticket-head"><b>T1-fix-add</b><span>1 attempt</span></div>
+<section><h2>Sent to the local model</h2>
+<pre><code>GOAL: add() returns the sum of its arguments.
+FILES: calc.py
+STEPS: In add(), return a + b instead of a - b.
+ACCEPTANCE: the syntax check passes.</code></pre></section>
+<section><h2>Applied to calc.py</h2>
+<pre class="diff"><code><span class="ctx"> def add(a, b):</span><span class="del">-    return a - b</span><span class="add">+    return a + b</span></code></pre></section>
+<section><span class="stamp">passed</span><h2>Returned to Claude</h2>
+<pre><code>{"status":"passed","attempts":1,"files":["calc.py"],"stat":"+1 -1 in 1 file","patch":".localexec/T1-fix-add.patch","log":".localexec/T1-fix-add.log","escalate":false,"why":"all checks passed"}</code></pre></section>
+</div>
+
+</section>
+
+<section class="band"><div class="wrap">
+<h2>How a task runs</h2>
+<ol class="steps"><li><strong>Claude writes a spec</strong>A short brief: the goal, the files, exact signatures, edge cases and the checks that must pass.</li><li><strong>localexec builds the prompt</strong>It adds the files to edit, any context you named and your project conventions, within the model's context budget.</li><li><strong>The local model replies with edits</strong>Ollama returns search-and-replace blocks. If they do not parse or match, they are sent back for repair. Nothing is written until every block applies.</li><li><strong>Your checks run</strong>Tests, linters and the size limits run on the result. A failure goes back to the model, up to the attempt limit.</li><li><strong>Claude gets a verdict</strong>One short result: status, files changed and a reason. The full diff and logs wait in .localexec/ until someone asks.</li></ol>
+</div></section>
+
+<section class="band"><div class="wrap">
+<h2>What you get</h2>
+<div class="pairs"><div><h3>The model runs on your machine</h3><p>Code is written by a model in Ollama. localexec needs no API key and makes no network calls except to your Ollama server.</p></div><div><h3>Your checks decide</h3><p>A task passes when your tests, linters and type checks pass, not when the model sounds sure. You configure them per project in one file.</p></div><div><h3>Results stay short</h3><p>Claude receives a verdict of a few lines. Reading a diff costs tokens only when a task fails or you want to review it.</p></div><div><h3>Edits are atomic and reversible</h3><p>Every block must apply or nothing is written. Each task keeps backups, so revert_task restores files exactly.</p></div><div><h3>Files stay small</h3><p>Optional standards fail a change that leaves a function over 50 code lines or a file over 500, so generated code stays reviewable.</p></div><div><h3>It never commits</h3><p>Changes stay in your working tree for you to review. localexec reads git status and never touches your history.</p></div></div>
+</div></section>
+
+<section class="band"><div class="wrap">
+<h2>Eight tools</h2>
+<p>Claude calls these over MCP. The first three change your project. The rest only read.</p>
+<div class="table-wrap"><table><thead><tr><th>Tool</th><th>What it does</th></tr></thead><tbody><tr><td><code>implement_task</code></td><td>Gives one small task to the local model, applies its edits, runs your checks and retries on failure.</td></tr><tr><td><code>run_checks</code></td><td>Runs the configured checks and returns pass or fail per check.</td></tr><tr><td><code>revert_task</code></td><td>Undoes a task: restores changed files and removes files it created.</td></tr><tr><td><code>list_tasks</code></td><td>Lists recent tasks, one short line each. Use it after losing context.</td></tr><tr><td><code>show_patch</code></td><td>Skims a task's diff cheaply, with a line cap.</td></tr><tr><td><code>status</code></td><td>Checks that Ollama is reachable, the model is installed and the config is valid.</td></tr><tr><td><code>outline</code></td><td>Lists a file's functions, classes and methods with line ranges.</td></tr><tr><td><code>find</code></td><td>Searches the project with a regular expression.</td></tr></tbody></table></div>
+<p><a href="tools.html">Read the tool reference</a></p>
+</div></section>
+
+<section class="band"><div class="wrap split">
+<div>
+<h2>Hold generated code to a size limit</h2>
+<p>Turn on the standards check and every task is measured. A function over 50 code lines fails, and the model is asked to extract helpers. A file over 500 lines fails and goes back to Claude, because splitting a file is a planning decision, not a retry.</p>
+<p><a href="standards.html">Read about coding standards</a></p>
+</div>
+<div>
+<p class="gauge-title">Function length</p>
+<div class="gauge" style="--soft:100%"><span class="mark end" style="left:calc(100% - 2px)"><span>fails above 50</span></span></div>
+<p class="gauge-title">File length</p>
+<div class="gauge" style="--soft:60%"><span class="mark" style="left:60%"><span>warns above 300</span></span><span class="mark end" style="left:calc(100% - 2px)"><span>fails above 500</span></span></div>
+</div>
+</div></section>
+
+<section class="band"><div class="wrap">
+<h2>Start in three steps</h2>
+<ol class="stack">
+<li><p><strong>Install the server and create the model.</strong> You need uv, git and Ollama. The guide has the two-line Modelfile.</p>
+<pre><code>uv sync
+ollama create qwen-coder-16k -f Modelfile</code></pre></li>
+<li><p><strong>Describe your checks.</strong> Copy <code>.localexec.example.json</code> into your project as <code>.localexec.json</code> and list the commands that must pass.</p></li>
+<li><p><strong>Register it with Claude Code.</strong></p>
+<pre><code>claude mcp add --scope user localexec -- uv run --project &lt;install-dir&gt; localexec-mcp</code></pre></li>
+</ol>
+<p><a class="btn primary" href="getting-started.html">Open the full guide</a></p>
+</div></section>
+</main>
+<footer class="site-footer"><div class="wrap"><span>localexec-mcp 0.1.0</span><span><a href="getting-started.html">Getting started</a><a href="guide.html">Using it with Claude</a><a href="tools.html">Tool reference</a><a href="configuration.html">Configuration</a></span></div></footer>
+<script src="assets/site.js"></script>
+</body>
+</html>
