@@ -1,0 +1,24 @@
+{
+  "ollama_model": "qwen-coder-16k",
+  "num_ctx": 16384,
+  "temperature": 0.1,
+  "max_attempts": 2,
+  "prompt_budget_tokens": 8000,
+  "standards": {
+    "max_function_lines": 50,
+    "max_file_lines": 500,
+    "warn_file_lines": 300,
+    "exempt": ["frontend/src/generated/**"]
+  },
+  "checks": [
+    { "name": "ruff",   "argv": ["uv", "run", "ruff", "check", "{files}"],     "files_filter": ["*.py"],            "timeout": 120 },
+    { "name": "mypy",   "argv": ["uv", "run", "mypy", "src"],                                                        "timeout": 300 },
+    { "name": "pytest", "argv": ["uv", "run", "pytest", "-x", "-q"],                                                 "timeout": 600 },
+    { "name": "eslint", "argv": ["npx", "eslint", "--max-warnings=0", "{files}"], "cwd": "frontend", "files_filter": ["frontend/**/*.ts", "frontend/**/*.tsx"], "timeout": 180 },
+    { "name": "tsc",    "argv": ["npx", "tsc", "--noEmit"], "cwd": "frontend", "files_filter": ["frontend/**/*.ts", "frontend/**/*.tsx"], "timeout": 300 },
+    { "name": "vitest", "argv": ["npx", "vitest", "run"],   "cwd": "frontend", "files_filter": ["frontend/**/*.ts", "frontend/**/*.tsx"], "timeout": 600 }
+  ],
+  "conventions": "Python 3.12, type hints on all functions, no new dependencies. Functions max 50 lines: extract small helpers. Search for an existing helper before writing a new one; never duplicate logic. Files max 500 lines. React: function components + hooks, TypeScript strict, no default exports. Do not touch tests unless the spec says so.",
+  "allowed_paths": ["backend/**", "frontend/src/**", "tests/**"],
+  "ignore": ["frontend/public/**", "migrations/**"]
+}

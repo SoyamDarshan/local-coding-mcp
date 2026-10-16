@@ -1,0 +1,12 @@
+{
+  "ollama_model": "qwen-coder-16k",
+  "num_ctx": 16384,
+  "max_attempts": 2,
+  "prompt_budget_tokens": 8000,
+  "standards": true,
+  "checks": [
+    { "name": "pytest", "argv": ["uv", "run", "pytest", "-x", "-q"], "timeout": 600 }
+  ],
+  "conventions": "Python 3.11, type hints on all functions, no new dependencies. Functions max 50 code lines: extract small helpers and reuse existing ones. Files max 500 lines. Use `from __future__ import annotations`. Tests use pytest and must be environment agnostic (no hardcoded paths or shells).",
+  "allowed_paths": ["src/**", "tests/**", "scripts/**"]
+}
