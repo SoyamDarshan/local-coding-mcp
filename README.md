@@ -120,7 +120,7 @@ The source is organised so that each package under `src/localexec/` groups one k
 | Package | Concern |
 |---|---|
 | `server.py`, `core.py` | MCP entry point and task orchestration |
-| `settings/` | config, path safety, task ids, standards defaults |
+| `settings/` | config, path safety, protected paths, task ids, standards defaults |
 | `fsio/` | safe text reads and atomic writes |
 | `editing/` | edit-block parsing, matching and application |
 | `tasks/` | the implement-and-retry loop, prompts, Ollama client, status |

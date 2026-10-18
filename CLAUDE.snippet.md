@@ -34,3 +34,5 @@ Workflow for any code change:
    file are still located by SEARCH text. Whole-file rewrites are refused for excerpted files.
 9. Use `run_checks` for a final full check and `revert_task` to undo a bad task. Never commit;
    leave changes in the working tree for the user to review.
+10. **Protected files:** if `implement_task` returns "protected file(s)", edit that file yourself;
+    do not retry or look for a way around it.
