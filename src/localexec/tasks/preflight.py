@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -11,6 +12,7 @@ from ..settings.common import TaskError, check_task_id, make_key_resolver, resol
 from ..settings.config import STATE_DIR, Check, Config, load_config
 from ..fsio.text import TextError, read_text
 from ..history.manifest import known_task_files
+from ..settings.protected import protected_among
 from ..settings.safety import glob_match
 from ..symbols import SymbolError
 from ..symbols.focus import focus_excerpts, parse_focus
@@ -82,6 +84,31 @@ def _validate_focus(root: Path, targets: dict[str, Path], symbols: list[str] | N
     return focus
 
 
+def _requested_rel(root: Path, name: str) -> str | None:
+    """The path as the caller wrote it: project-relative, forward slashes, `.`/`..` collapsed, links not followed."""
+    path = Path(name.strip().replace("\\", "/"))
+    if path.is_absolute():
+        try:
+            path = path.relative_to(root)
+        except ValueError:
+            return None
+    return Path(os.path.normpath(path.as_posix())).as_posix()
+
+
+def _guard_protected(root: Path, cfg: Config, requested: list[str], targets: dict[str, Path]) -> None:
+    """Refuse files that decide what runs or how Claude is configured; the planner edits those itself.
+
+    Both the requested spelling and the symlink-resolved path are checked."""
+    forms = [rel for name in requested if (rel := _requested_rel(root, name)) is not None]
+    hit = protected_among([*forms, *targets], cfg.protected_paths, cfg.allow_protected)
+    if hit:
+        more = f" (+{len(hit) - 3} more)" if len(hit) > 3 else ""
+        raise TaskError(
+            f"protected file(s): {', '.join(hit[:3])}{more}. "
+            "They control what runs or how Claude is configured; edit them yourself."
+        )
+
+
 def prepare(
     root: Path,
     task_id: str,
@@ -101,6 +128,7 @@ def prepare(
     targets = resolve_targets(root, cfg, files_to_edit, "files_to_edit")
     context = resolve_targets(root, cfg, context_files or [], "context_files")
     context = {rel: p for rel, p in context.items() if rel not in targets}
+    _guard_protected(root, cfg, files_to_edit, targets)
     selected = select_checks(cfg, check_names)
     _guard_git_tree(root, targets)
     sdir = state_dir(root)
