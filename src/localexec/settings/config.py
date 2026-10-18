@@ -65,6 +65,8 @@ class Config:
     allowed_paths: list[str] = field(default_factory=lambda: ["**"])
     ignore: list[str] = field(default_factory=lambda: list(DEFAULT_IGNORE))
     standards: Standards | None = None  # enabled by a "standards" block in the config
+    protected_paths: list[str] = field(default_factory=list)  # extra patterns the model may not edit
+    allow_protected: list[str] = field(default_factory=list)  # exceptions to the protected list
 
     @property
     def prompt_budget_chars(self) -> int:
@@ -138,7 +140,7 @@ def _read_raw(root: Path) -> dict[str, Any]:
         raise ConfigError(f"cannot read {CONFIG_NAME}: {e}") from e
     if not isinstance(raw, dict):
         raise ConfigError(f"{CONFIG_NAME} must be a JSON object")
-    unknown = set(raw) - (set(_SCALARS) | {"checks", "allowed_paths", "ignore", "standards"})
+    unknown = set(raw) - (set(_SCALARS) | {"checks", "allowed_paths", "ignore", "standards", "protected_paths", "allow_protected"})
     if unknown:
         raise ConfigError(f"unknown key(s) in {CONFIG_NAME}: {', '.join(sorted(unknown))}")
     return raw
@@ -157,6 +159,16 @@ def _apply_scalars(cfg: Config, raw: dict[str, Any]) -> None:
             raise ConfigError(f"{key} must be a positive integer")
     if not (isinstance(cfg.temperature, (int, float)) and math.isfinite(cfg.temperature) and 0 <= cfg.temperature <= 2):
         raise ConfigError("temperature must be a number between 0 and 2")
+
+
+def _apply_protection(cfg: Config, raw: dict[str, Any]) -> None:
+    for key in ("protected_paths", "allow_protected"):
+        if key not in raw:
+            continue
+        v = raw[key]
+        if not isinstance(v, list) or not all(isinstance(x, str) for x in v):
+            raise ConfigError(f"{key} must be a list of strings")
+        setattr(cfg, key, list(v))
 
 
 def _apply_globs(cfg: Config, raw: dict[str, Any]) -> None:
@@ -207,6 +219,7 @@ def load_config(root: Path) -> Config:
     raw = _read_raw(root)
     _apply_scalars(cfg, raw)
     _apply_globs(cfg, raw)
+    _apply_protection(cfg, raw)
     seen: set[str] = set()
     cfg.checks = [_parse_check(item, seen) for item in raw.get("checks", [])]
     cfg.standards = _parse_standards(raw.get("standards"))
