@@ -38,6 +38,12 @@ ACCEPTANCE: the syntax check passes.</code></pre></section>
 
 </section>
 
+<section class="band" id="demo"><div class="wrap">
+<h2>See a task run in 21 seconds</h2>
+<p>One real task from spec to verdict: Claude writes the brief, a local model makes the edit, your checks decide, and Claude gets a few lines back instead of a diff. The video has music and no narration.</p>
+<figure class="demo"><video controls playsinline preload="none" poster="assets/demo-poster.jpg" aria-describedby="demo-text"><source src="assets/demo.mp4" type="video/mp4">Your browser cannot play this video. The same steps are described below.</video><figcaption id="demo-text">The video shows: Claude sends a spec for <code>calc.py</code>; the local model changes <code>a - b</code> to <code>a + b</code>; tests, linters and size limits pass; the result returned to Claude is a short JSON verdict. It ends with the install command.</figcaption></figure>
+</div></section>
+
 <section class="band"><div class="wrap">
 <h2>How a task runs</h2>
 <ol class="steps"><li><strong>Claude writes a spec</strong>A short brief: the goal, the files, exact signatures, edge cases and the checks that must pass.</li><li><strong>localexec builds the prompt</strong>It adds the files to edit, any context you named and your project conventions, within the model's context budget.</li><li><strong>The local model replies with edits</strong>Ollama returns search-and-replace blocks. If they do not parse or match, they are sent back for repair. Nothing is written until every block applies.</li><li><strong>Your checks run</strong>Tests, linters and the size limits run on the result. A failure goes back to the model, up to the attempt limit.</li><li><strong>Claude gets a verdict</strong>One short result: status, files changed and a reason. The full diff and logs wait in .localexec/ until someone asks.</li></ol>
