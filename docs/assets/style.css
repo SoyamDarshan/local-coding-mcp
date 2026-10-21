@@ -161,3 +161,7 @@ article li { margin: 0.3rem 0; }
 }
 
 .diff span { display: block; }
+
+.demo { margin: 2rem 0 0; }
+.demo video { display: block; width: 100%; max-width: 60rem; aspect-ratio: 16 / 9; background: var(--code); border: 1px solid var(--rule); border-radius: 12px; }
+.demo figcaption { max-width: 60rem; margin-top: 0.8rem; color: var(--muted); font-size: 0.95rem; }

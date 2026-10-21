@@ -2,6 +2,10 @@
 
 A local MCP server that lets Claude Code hand small, well-specified coding tasks to a model running in Ollama on your own machine, then verifies the result with your own tests and linters.
 
+<a href="https://soyamdarshan.github.io/local-coding-mcp/#demo"><img src="docs/assets/demo-poster.jpg" alt="Watch the 21-second demo: a coding task goes from Claude's spec to a passing verdict" width="640"></a>
+
+**[Watch the 21-second demo](https://soyamdarshan.github.io/local-coding-mcp/#demo)** &nbsp;·&nbsp; [Read the docs](https://soyamdarshan.github.io/local-coding-mcp/)
+
 Claude plans the work and writes a spec. A local model writes the code. Your checks decide whether it passed. Claude gets back a short verdict instead of a diff, so a long coding session spends fewer tokens on writing code. No API key is needed, and the server only talks to your Ollama instance.
 
 ```
@@ -100,7 +104,7 @@ Environment variables: `LOCALEXEC_ROOT` sets the project root explicitly, and `L
 
 ## Documentation
 
-The `docs/` folder is a static documentation site with a landing page, a getting started guide, the workflow for Claude, a tool and configuration reference, and troubleshooting. Open `docs/index.html` in a browser, or publish it with GitHub Pages: in the repository settings, choose **Deploy from a branch**, then the `main` branch and the `/docs` folder.
+The documentation site is at https://soyamdarshan.github.io/local-coding-mcp/, and the landing page has a [21-second demo video](https://soyamdarshan.github.io/local-coding-mcp/#demo). The `docs/` folder is a static documentation site with a landing page, a getting started guide, the workflow for Claude, a tool and configuration reference, and troubleshooting. Open `docs/index.html` in a browser, or publish it with GitHub Pages: in the repository settings, choose **Deploy from a branch**, then the `main` branch and the `/docs` folder.
 
 `CLAUDE.snippet.md` holds the workflow as instructions for your project's `CLAUDE.md`, and `SPEC_TEMPLATE.md` is the spec format.
 
