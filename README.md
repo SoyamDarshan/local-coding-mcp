@@ -130,3 +130,7 @@ The source is organised so that each package under `src/localexec/` groups one k
 | `explore/`, `symbols/`, `structure/` | `outline` and `find`, symbol ranges, directory limits |
 
 Dependencies point one way: `settings`, `fsio` and `vcs` are leaves, and `tasks` builds on everything below it. `tests/` mirrors the packages.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
